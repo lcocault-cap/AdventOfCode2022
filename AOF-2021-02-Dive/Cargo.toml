@@ -1,5 +1,5 @@
 [package]
-name = "AOF-2021-02-Dive"
+name = "dive"
 version = "0.1.0"
 edition = "2021"
 
