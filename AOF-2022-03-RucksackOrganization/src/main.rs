@@ -1,28 +1,64 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
-fn process_line(line: String, sum: i32) -> i32 {
-    // Get the content of the compartments
-    let size = line.len();
-    let (first_compartment, second_compartment) = line.split_at(size / 2);
+struct Context {
+    sum: u32,
+    first: String,
+    second: String,
+}
 
-    // Find the common item
-    let mut common_item = ' ';
-    for item in first_compartment.chars() {
-        if second_compartment.contains(item) {
-            common_item = item;
+// Compute the value of the common item
+fn compute_priority(item: char) -> u32 {
+    let mut priority = 0;
+    if ('a'..'{').contains(&item) {
+        priority = item as u32 - 'a' as u32 + 1;
+    } else if ('A'..'[').contains(&item) {
+        priority = item as u32 - 'A' as u32 + 27;
+    }
+    return priority;
+}
+
+fn process_line(line: String, context: Context) -> Context {
+    let mut new_context = Context {
+        sum: context.sum,
+        first: context.first,
+        second: context.second,
+    };
+
+    // First line of a group, just store it
+    if new_context.first.is_empty() {
+        new_context.first = String::from(line);
+    }
+    // Second line of a group, just store it
+    else if new_context.second.is_empty() {
+        new_context.second = line;
+    }
+    // Third line. Find the badge and sum the priority
+    else {
+        // Three lines of the group
+        let first = &new_context.first;
+        let second = &new_context.second;
+        let third = line;
+
+        // Search the common item
+        let mut common_item = ' ';
+        for item in first.chars() {
+            if second.contains(item) && third.contains(item) {
+                common_item = item;
+            }
         }
+
+        // Sum the priority
+        let priority = compute_priority(common_item);
+        let new_sum = context.sum + priority;
+        new_context = Context {
+            sum: new_sum,
+            first: "".to_string(),
+            second: "".to_string(),
+        };
     }
 
-    // Compute the value of the common item
-    let mut value = 0;
-    if ('a'..'{').contains(&common_item) {
-        value = common_item as i32 - 'a' as i32 + 1;
-    } else if ('A'..'[').contains(&common_item) {
-        value = common_item as i32 - 'A' as i32 + 27;
-    }
-
-    return sum + value;
+    return new_context;
 }
 
 fn process_input(filename: &str) {
@@ -30,14 +66,18 @@ fn process_input(filename: &str) {
     let file = File::open(filename).unwrap();
     let reader = BufReader::new(file);
     // Data management
-    let mut sum: i32 = 0;
+    let mut context = Context {
+        sum: 0,
+        first: "".to_string(),
+        second: "".to_string(),
+    };
 
     for (_index, file_line) in reader.lines().enumerate() {
         let line = file_line.unwrap();
-        sum = process_line(line, sum);
+        context = process_line(line, context);
     }
 
-    println!("Sum is {}", sum);
+    println!("Sum is {}", context.sum);
 }
 
 fn main() {
