@@ -13,7 +13,7 @@ fn process_line(line: String, sum: i32) -> i32 {
         let min2 = cap[3].parse::<u32>().unwrap();
         let max2 = cap[4].parse::<u32>().unwrap();
 
-        if min1<=min2 && max1>=max2 || min2<=min1 && max2>=max1 {
+        if max1>=min2 && max2>=min1 {
             new_sum = new_sum + 1;
         }
     }
