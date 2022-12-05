@@ -28,11 +28,14 @@ fn apply_move(line: String, context: Context) -> Context {
         let move_from = cap[2].parse::<usize>().unwrap();
         let move_to = cap[3].parse::<usize>().unwrap();
 
-        println!("Move {} times from {} to {}", nb_moves, move_from, move_to);
-
-        // Apply them
+        // Apply them / Use a temporary vector to preserve the order
+        let mut tmp = Vec::new();
         for _move_index in 0..nb_moves {
             let poped = new_context.stacks[move_from - 1].pop().unwrap();
+            tmp.push(poped);
+        }
+        for _move_index in 0..nb_moves {
+            let poped = tmp.pop().unwrap();
             new_context.stacks[move_to - 1].push(poped);
         }
     }
@@ -81,7 +84,7 @@ fn process_input(filename: &str) {
     // File Processing
     let file = File::open(filename).unwrap();
     let reader = BufReader::new(file);
-    
+
     // Data management
     let mut context = Context {
         move_part: false,
