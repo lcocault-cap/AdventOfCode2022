@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 // Size of the comparison buffer
-const BUFF_SIZE: u32 = 4;
+const BUFF_SIZE: u32 = 14;
 
 fn is_a_marker(buffer: Vec<char>) -> bool {
     let mut copy = buffer.to_vec();
