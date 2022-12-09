@@ -22,69 +22,60 @@ fn process_line(line: String, grid: &mut Grid) {
     }
 }
 
-fn is_visible(grid: &Grid, row: usize, col: usize) -> bool {
+fn compute_score(grid: &Grid, row: usize, col: usize) -> u32 {
     let ref_height = grid.trees.get(row).unwrap().get(col).unwrap();
-    let mut visible = true;
     // Check from the left
-    for i in 0..col {
+    let mut left_score = 0;
+    for i in (0..col).rev() {
         let current_height = grid.trees.get(row).unwrap().get(i).unwrap();
+        left_score = left_score + 1;
         if current_height >= ref_height {
-            visible = false;
+            break;
         }
-    }
-    if visible {
-        return true;
-    } else {
-        visible = true;
     }
     // Check from the right
-    for i in (col + 1)..grid.width {
+    let mut right_score = 0;
+    for i in (col+1)..grid.width {
         let current_height = grid.trees.get(row).unwrap().get(i).unwrap();
+        right_score = right_score + 1;
         if current_height >= ref_height {
-            visible = false;
+            break;
         }
     }
-    if visible {
-        return true;
-    } else {
-        visible = true;
-    }
+
     // Check from the top
-    for i in 0..row {
+    let mut top_score = 0;
+    for i in (0..row).rev() {
         let current_height = grid.trees.get(i).unwrap().get(col).unwrap();
+        top_score = top_score + 1;
         if current_height >= ref_height {
-            visible = false;
+            break;
         }
-    }
-    if visible {
-        return true;
-    } else {
-        visible = true;
     }
     // Check from the bottom
-    for i in row + 1..grid.height {
+    let mut bottom_score = 0;
+    for i in (row + 1)..grid.height {
         let current_height = grid.trees.get(i).unwrap().get(col).unwrap();
+        bottom_score = bottom_score + 1;
         if current_height >= ref_height {
-            visible = false;
+            break;
         }
     }
-    if visible {
-        return true;
-    } else {
-        return false;
-    }
+
+    return left_score * right_score * bottom_score * top_score;
 }
 
-fn compute_visible_trees(grid: &Grid) -> u32 {
-    let mut count = 0;
+fn compute_best_scenic_score(grid: &Grid) -> u32 {
+    let mut best_score = 0;
     for row in 0..grid.height {
         for col in 0..grid.width {
-            if is_visible(grid, row, col) {
-                count = count + 1;
+            let score = compute_score(grid, row, col);
+            if score > best_score {
+                best_score = score;
             }
         }
     }
-    return count;
+    return best_score;
 }
 
 fn process_input(filename: &str) {
@@ -104,9 +95,9 @@ fn process_input(filename: &str) {
         process_line(line, &mut grid);
     }
 
-    let visible_trees = compute_visible_trees(&grid);
+    let best_scenic_score = compute_best_scenic_score(&grid);
 
-    println!("Number of visible trees is {}", visible_trees);
+    println!("Best scenic score is {}", best_scenic_score);
 }
 
 fn main() {
