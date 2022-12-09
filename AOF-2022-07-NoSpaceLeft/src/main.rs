@@ -83,15 +83,16 @@ fn process_line(line: String, tree: &mut DirectoryTree) {
     }
 }
 
-fn compute_total_size(tree: &DirectoryTree) -> u32 {
-    // Cumulated size
-    let mut size = 0;
+fn compute_size(size_to_delete: u32, tree: &DirectoryTree) -> u32 {
+    let mut best_size = 70000000;
     for directory in tree.directories.values() {
-        if directory.size <= 100_000 {
-            size = size + directory.size;
+        println!("Current = {}", directory.size);
+        if directory.size > size_to_delete && directory.size < best_size {
+            println!("New best !!!");
+            best_size = directory.size;
         }
     }
-    return size;
+    return best_size;
 }
 
 fn process_input(filename: &str) {
@@ -118,7 +119,14 @@ fn process_input(filename: &str) {
         process_line(line, &mut tree);
     }
 
-    println!("Size of directories is {}", compute_total_size(&tree));
+    let global_size = tree.directories.get(&0).unwrap().size;
+    let size_to_delete = global_size - 40000000;
+    println!("Global = {}; to delete = {}", global_size, size_to_delete);
+
+    println!(
+        "Size of directory is {}",
+        compute_size(size_to_delete, &tree)
+    );
 }
 
 fn main() {
