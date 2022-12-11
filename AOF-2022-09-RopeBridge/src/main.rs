@@ -2,34 +2,43 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::vec::Vec;
 
+// Number of knots on the rope
+const NB_KNOTS: usize = 10;
+
 struct State {
-    head_x: i32,
-    head_y: i32,
-    tail_x: i32,
-    tail_y: i32,
+    x: [i32; NB_KNOTS],
+    y: [i32; NB_KNOTS],
     positions: Vec<i32>,
 }
 
-fn too_far(state: &mut State) -> bool {
-    let delta_x = (state.head_x - state.tail_x).abs();
-    let delta_y = (state.head_y - state.tail_y).abs();
-    return delta_x > 1 || delta_y > 1;
-}
-
 fn perform_action(state: &mut State, delta_x: i32, delta_y: i32) {
-    // Previous head position
-    let previous_head_x = state.head_x;
-    let previous_head_y = state.head_y;
     // Update the position of the head with the delta
-    state.head_x = state.head_x + delta_x;
-    state.head_y = state.head_y + delta_y;
-    // With a rope of length 1, the position of the tail is the previous position of the head
-    if too_far(state) {
-        state.tail_x = previous_head_x;
-        state.tail_y = previous_head_y;
+    state.x[0] = state.x[0] + delta_x;
+    state.y[0] = state.y[0] + delta_y;
+    // Compute the position of the following knots
+    for knot in 1..NB_KNOTS {
+        // Compute the delta between two nodes
+        let gap_x = state.x[knot - 1] - state.x[knot];
+        let gap_y = state.y[knot - 1] - state.y[knot];
+        // Move accordingly
+        if gap_x.abs() >= 2 || gap_y.abs() >= 2 {
+            if gap_x >= 1 {
+                state.x[knot] = state.x[knot] + 1;
+            }
+            if gap_x <= -1 {
+                state.x[knot] = state.x[knot] - 1;
+            }
+            if gap_y >= 1 {
+                state.y[knot] = state.y[knot] + 1;
+            }
+            if gap_y <= -1 {
+                state.y[knot] = state.y[knot] - 1;
+            }
+        }
     }
+
     // Compute a hash of the tail position and add it to the list of positions if not already explored
-    let hash = state.tail_x * 1000 + state.tail_y;
+    let hash = state.x[NB_KNOTS - 1] * 1000 + state.y[NB_KNOTS - 1];
     if !state.positions.contains(&hash) {
         state.positions.insert(0, hash);
     }
@@ -66,10 +75,8 @@ fn process_input(filename: &str) {
     let reader = BufReader::new(file);
     // Data management
     let mut state = State {
-        head_x: 0,
-        head_y: 0,
-        tail_x: 0,
-        tail_y: 0,
+        x: [0; NB_KNOTS],
+        y: [0; NB_KNOTS],
         positions: Vec::new(),
     };
 
