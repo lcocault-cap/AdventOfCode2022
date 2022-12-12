@@ -4,23 +4,25 @@ use std::io::{BufRead, BufReader};
 struct State {
     cycle: u32,
     register: i32,
-    signal_strength: i32,
-}
-
-fn update_signal_strength(state: &mut State) {
-    let cycle = state.cycle;
-    if cycle >= 20 && (cycle - 20) % 40 == 0 {
-        println!("Value at cycle {} is {}", cycle, state.register);
-        let signal_update = state.register * cycle as i32;
-        state.signal_strength = state.signal_strength + signal_update;
-    }
 }
 
 fn execute_instruction(state: &mut State, cycle_count: u32, register_increment: i32) {
     // Process cycles
     for _i in 0..cycle_count {
+        // Display the current pixel
+        let relative_cycle = (state.cycle % 40) as i32;
+        let signal = state.register;
+        if relative_cycle >= (signal - 1) && relative_cycle <= (signal + 1) {
+            print!("#");
+        } else {
+            print!(".");
+        }
+        // New cycle
         state.cycle = state.cycle + 1;
-        update_signal_strength(state);
+        // Signal update
+        if state.cycle > 0 && state.cycle % 40 == 0 {
+            println!("");
+        }
     }
     // Update the registry
     state.register = state.register + register_increment;
@@ -55,15 +57,12 @@ fn process_input(filename: &str) {
     let mut state = State {
         cycle: 0,
         register: 1,
-        signal_strength: 0,
     };
 
     for (_index, file_line) in reader.lines().enumerate() {
         let line = file_line.unwrap();
         process_line(line, &mut state);
     }
-
-    println!("Signal strength is {}", state.signal_strength);
 }
 
 fn main() {
